@@ -6,7 +6,7 @@
 /*   By: cgross-s <cgross-s@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/25 21:16:41 by cgross-s          #+#    #+#             */
-/*   Updated: 2025/08/31 17:29:04 by cgross-s         ###   ########.fr       */
+/*   Updated: 2025/08/31 20:38:20 by cgross-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,16 +48,8 @@ typedef struct s_pipex
 	char	**paths_cmds;	// Array de paths para todos os comandos
 	char	***args_cmds;	// Array de arrays de argumentos
 	int		cmd_count;		// Número total de comandos
+	char	**argv;			// Adicionar argv à estrutura
 }	t_pipex;
-
-
-
-//void	remove_spaces(char **array);
-//void	handle_urandom(void);
-//char	*ft_strndup(const char *s, size_t len);
-//void	setup_outfile(t_pipex *pipex, char **argv);
-//void	setup_infile(t_pipex *pipex, char **argv);
-//char	*is_script(char *cmd);
 
 /*error_handling.c*/
 void	ft_free_memory(char **path, char *path_command);
@@ -88,8 +80,8 @@ int		ft_read(char **line, int fd, char limiter);
 void	handle_urandom(void);
 
 /*main.c*/
-//void check_args(t_pipex *pipex, char **argv, char **envp);
-//void init_pipex(t_pipex *pipex, int cmd_count);
+void check_args(t_pipex *pipex, char **envp);
+void init_pipex(t_pipex *pipex, int cmd_count, char **argv);
 
 /*parsing_utils.c*/
 int		is_only_spaces(const char *str);
@@ -98,13 +90,13 @@ void	remove_spaces(char **array);
 char	*is_script(char *cmd);
 
 /*pipex_utils.c*/
-void	setup_outfile(t_pipex *pipex, char **argv);
-void	setup_infile(t_pipex *pipex, char **argv);
+void	setup_outfile(t_pipex *pipex);
+void	setup_infile(t_pipex *pipex);
 
 /*pipex.c*/
 void	ft_execve(char *cmd, char **args, t_pipex *pipex, char **envp);
 void	close_all_pipes(int *pipes, int pipe_count);
-void	child_process(int cmd_index, int *pipes, t_pipex *pipex, char **envp, char **argv);
-void	ft_exec(t_pipex *pipex, char **envp, char **argv);
+void	child_process(int cmd_index, int *pipes, t_pipex *pipex, char **envp);
+void	ft_exec(t_pipex *pipex, char **envp);
 
 #endif 

@@ -6,7 +6,7 @@
 /*   By: cgross-s <cgross-s@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 21:22:01 by cgross-s          #+#    #+#             */
-/*   Updated: 2025/08/31 12:25:37 by cgross-s         ###   ########.fr       */
+/*   Updated: 2025/08/31 19:19:36 by cgross-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,7 @@ void close_all_pipes(int *pipes, int pipe_count)
 		close(pipes[i]);
 }
 
-
-void child_process(int cmd_index, int *pipes, t_pipex *pipex, char **envp, char **argv)
+void child_process(int cmd_index, int *pipes, t_pipex *pipex, char **envp)
 {
 	// Configurar redirecionamentos apenas se houver pipes
 	if (pipes != NULL)
@@ -54,14 +53,14 @@ void child_process(int cmd_index, int *pipes, t_pipex *pipex, char **envp, char 
 		if (cmd_index == 0)
 		{
 			// Primeiro comando: ler do arquivo de entrada
-			setup_infile(pipex, argv);
+			setup_infile(pipex);  // Removido argv
 			dup2(pipex->fd_infile, STDIN_FILENO);
 			dup2(pipes[1], STDOUT_FILENO);
 		}
 		else if (cmd_index == pipex->cmd_count - 1)
 		{
 			// Último comando: escrever no arquivo de saída
-			setup_outfile(pipex, argv);
+			setup_outfile(pipex);  // Removido argv
 			dup2(pipes[2 * (cmd_index - 1)], STDIN_FILENO);
 			dup2(pipex->fd_outfile, STDOUT_FILENO);
 		}
@@ -78,12 +77,13 @@ void child_process(int cmd_index, int *pipes, t_pipex *pipex, char **envp, char 
 	else
 	{
 		// Caso de único comando (sem pipes)
-		setup_infile(pipex, argv);
-		setup_outfile(pipex, argv);
+		setup_infile(pipex);  // Removido argv
+		setup_outfile(pipex);  // Removido argv
 		dup2(pipex->fd_infile, STDIN_FILENO);
 		dup2(pipex->fd_outfile, STDOUT_FILENO);
 	}
 	
+	// ... resto da função permanece igual
 	// Verificar se o comando existe
 	if (pipex->paths_cmds[cmd_index] == NULL)
 	{
@@ -105,11 +105,17 @@ void child_process(int cmd_index, int *pipes, t_pipex *pipex, char **envp, char 
 			  pipex->args_cmds[cmd_index], 
 			  pipex, envp);
 }
+/*	
+	// Executar o comando
+	ft_execve(pipex->paths_cmds[cmd_index], 
+			  pipex->args_cmds[cmd_index], 
+			  pipex, envp);
+}*/
 
 
 
-
-void ft_exec(t_pipex *pipex, char **envp, char **argv)
+void ft_exec(t_pipex *pipex, char **envp)  // Removido argv
+//void ft_exec(t_pipex *pipex, char **envp, char **argv)
 {
 	int     i;
 	int     *pipes;
@@ -118,12 +124,20 @@ void ft_exec(t_pipex *pipex, char **envp, char **argv)
 	
 	if (pipex->cmd_count == 1)
 	{
+		/*
 		// Caso especial: apenas um comando
 		setup_infile(pipex, argv);
 		setup_outfile(pipex, argv);
 		dup2(pipex->fd_infile, STDIN_FILENO);
 		dup2(pipex->fd_outfile, STDOUT_FILENO);
 		child_process(0, NULL, pipex, envp, argv);
+		return;*/
+		// Caso especial: apenas um comando
+		setup_infile(pipex);  // Removido argv
+		setup_outfile(pipex);  // Removido argv
+		dup2(pipex->fd_infile, STDIN_FILENO);
+		dup2(pipex->fd_outfile, STDOUT_FILENO);
+		child_process(0, NULL, pipex, envp);  // Removido argv
 		return;
 	}
 	
@@ -168,7 +182,7 @@ void ft_exec(t_pipex *pipex, char **envp, char **argv)
 		
 		if (pids[i] == 0)
 		{
-			child_process(i, pipes, pipex, envp, argv);
+			child_process(i, pipes, pipex, envp);
 		}
 	}
 	
