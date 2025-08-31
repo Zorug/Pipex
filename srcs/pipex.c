@@ -6,7 +6,7 @@
 /*   By: cgross-s <cgross-s@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 21:22:01 by cgross-s          #+#    #+#             */
-/*   Updated: 2025/08/27 22:36:34 by cgross-s         ###   ########.fr       */
+/*   Updated: 2025/08/31 12:25:37 by cgross-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,71 +33,156 @@ void	ft_execve(char *cmd, char **args, t_pipex *pipex, char **envp)
 	}
 }
 
-void	child_process(int *fd, t_pipex *pipex, char **envp)
+// Função para fechar todos os pipes
+void close_all_pipes(int *pipes, int pipe_count)
 {
-	if (pipex->path_cmd1 == NULL)
+	int i;
+	
+	if (pipes == NULL)
+		return;
+		
+	for (i = 0; i < 2 * pipe_count; i++)
+		close(pipes[i]);
+}
+
+
+void child_process(int cmd_index, int *pipes, t_pipex *pipex, char **envp, char **argv)
+{
+	// Configurar redirecionamentos apenas se houver pipes
+	if (pipes != NULL)
 	{
-		if (pipex->args_cmd1 != NULL)
+		if (cmd_index == 0)
 		{
-			if (!is_script(pipex->args_cmd1[0]))
-				pipex->path_cmd1 = ft_strdup(pipex->args_cmd1[0]);
+			// Primeiro comando: ler do arquivo de entrada
+			setup_infile(pipex, argv);
+			dup2(pipex->fd_infile, STDIN_FILENO);
+			dup2(pipes[1], STDOUT_FILENO);
+		}
+		else if (cmd_index == pipex->cmd_count - 1)
+		{
+			// Último comando: escrever no arquivo de saída
+			setup_outfile(pipex, argv);
+			dup2(pipes[2 * (cmd_index - 1)], STDIN_FILENO);
+			dup2(pipex->fd_outfile, STDOUT_FILENO);
 		}
 		else
 		{
-			ft_cleanup(pipex);
-			ft_putstr_fd("command not found\n", 2);
-			exit(127);
+			// Comandos intermediários
+			dup2(pipes[2 * (cmd_index - 1)], STDIN_FILENO);
+			dup2(pipes[2 * cmd_index + 1], STDOUT_FILENO);
 		}
-	}
-	dup2(pipex->fd_infile, STDIN_FILENO);
-	dup2(fd[1], STDOUT_FILENO);
-	close(fd[0]);
-	close(fd[1]);
-	ft_execve(pipex->path_cmd1, pipex->args_cmd1, pipex, envp);
-}
-
-void	parent_process(int *fd, t_pipex *pipex, char **envp, int process)
-{
-	waitpid(process, NULL, WNOHANG);
-	if (pipex->path_cmd2 == NULL)
-	{
-		if (pipex->args_cmd2 != NULL)
-		{
-			if (!is_script(pipex->args_cmd2[0]))
-				pipex->path_cmd2 = ft_strdup(pipex->args_cmd2[0]);
-		}
-		else
-		{
-			ft_cleanup(pipex);
-			ft_putstr_fd("command not found\n", 2);
-			exit(127);
-		}
-	}
-	dup2(fd[0], STDIN_FILENO);
-	dup2(pipex->fd_outfile, STDOUT_FILENO);
-	close(fd[1]);
-	close(fd[0]);
-	ft_execve(pipex->path_cmd2, pipex->args_cmd2, pipex, envp);
-}
-
-void	ft_exec(t_pipex *pipex, char **envp, char **argv)
-{
-	int	fd[2];
-	int	process;
-
-	if ((pipe(fd)) == -1)
-		perror("pipe");
-	process = fork();
-	if (process == -1)
-		perror("fork");
-	if (process == 0)
-	{
-		setup_infile(pipex, argv);
-		child_process(fd, pipex, envp);
+		
+		// Fechar todos os pipes
+		close_all_pipes(pipes, pipex->cmd_count - 1);
 	}
 	else
 	{
+		// Caso de único comando (sem pipes)
+		setup_infile(pipex, argv);
 		setup_outfile(pipex, argv);
-		parent_process(fd, pipex, envp, process);
+		dup2(pipex->fd_infile, STDIN_FILENO);
+		dup2(pipex->fd_outfile, STDOUT_FILENO);
 	}
+	
+	// Verificar se o comando existe
+	if (pipex->paths_cmds[cmd_index] == NULL)
+	{
+		if (pipex->args_cmds[cmd_index] != NULL && pipex->args_cmds[cmd_index][0])
+		{
+			if (!is_script(pipex->args_cmds[cmd_index][0]))
+				pipex->paths_cmds[cmd_index] = ft_strdup(pipex->args_cmds[cmd_index][0]);
+		}
+		else
+		{
+			ft_cleanup(pipex);
+			ft_putstr_fd("command not found\n", 2);
+			exit(127);
+		}
+	}
+	
+	// Executar o comando
+	ft_execve(pipex->paths_cmds[cmd_index], 
+			  pipex->args_cmds[cmd_index], 
+			  pipex, envp);
+}
+
+
+
+
+void ft_exec(t_pipex *pipex, char **envp, char **argv)
+{
+	int     i;
+	int     *pipes;
+	pid_t   *pids;
+	int     status;
+	
+	if (pipex->cmd_count == 1)
+	{
+		// Caso especial: apenas um comando
+		setup_infile(pipex, argv);
+		setup_outfile(pipex, argv);
+		dup2(pipex->fd_infile, STDIN_FILENO);
+		dup2(pipex->fd_outfile, STDOUT_FILENO);
+		child_process(0, NULL, pipex, envp, argv);
+		return;
+	}
+	
+	// Criar pipes para todos os comandos (n-1 pipes para n comandos)
+	pipes = malloc(sizeof(int) * 2 * (pipex->cmd_count - 1));
+	pids = malloc(sizeof(pid_t) * pipex->cmd_count);
+	
+	// Verificar se a alocação de memória foi bem-sucedida
+	if (!pipes || !pids)
+	{
+		perror("malloc");
+		if (pipes) free(pipes);
+		if (pids) free(pids);
+		return;
+	}
+	
+	// Criar todos os pipes
+	for (i = 0; i < pipex->cmd_count - 1; i++)
+	{
+		if (pipe(pipes + i * 2) == -1)
+		{
+			perror("pipe");
+			// Fechar qualquer pipe que possa ter sido aberto antes do erro
+			for (int j = 0; j < i * 2; j++)
+				close(pipes[j]);
+			free(pipes);
+			free(pids);
+			return;
+		}
+	}
+	
+	// Executar todos os comandos
+	for (i = 0; i < pipex->cmd_count; i++)
+	{
+		pids[i] = fork();
+		if (pids[i] == -1)
+		{
+			perror("fork");
+			// Continuar com os outros processos mesmo se um fork falhar
+			continue;
+		}
+		
+		if (pids[i] == 0)
+		{
+			child_process(i, pipes, pipex, envp, argv);
+		}
+	}
+	
+	// Fechar todos os pipes no processo pai
+	for (i = 0; i < 2 * (pipex->cmd_count - 1); i++)
+		close(pipes[i]);
+	
+	// Esperar por todos os processos filhos
+	for (i = 0; i < pipex->cmd_count; i++)
+	{
+		if (pids[i] > 0)
+			waitpid(pids[i], &status, 0);
+	}
+	
+	free(pipes);
+	free(pids);
 }

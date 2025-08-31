@@ -6,58 +6,76 @@
 /*   By: cgross-s <cgross-s@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 22:42:16 by cgross-s          #+#    #+#             */
-/*   Updated: 2025/08/28 19:06:34 by cgross-s         ###   ########.fr       */
+/*   Updated: 2025/08/31 12:32:10 by cgross-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/pipex.h"
 
-void	check_args(t_pipex *pipex, char **argv, char **envp)
+
+// Verificação de argumentos atualizada
+void check_args(t_pipex *pipex, char **argv, char **envp)
 {
-	if (argv[CMD1][0] == '\0')
-		pipex->args_cmd1 = NULL;
-	else
+	int i;
+	int cmd_index;
+	
+	for (i = 0; i < pipex->cmd_count; i++)
 	{
-		pipex->args_cmd1 = ft_split_mod(argv[CMD1]);
-		if (!pipex->args_cmd1)
-			pipex->path_cmd1 = NULL;
+		cmd_index = CMD1 + i;
+		if (argv[cmd_index][0] == '\0')
+		{
+			pipex->args_cmds[i] = NULL;
+			pipex->paths_cmds[i] = NULL;
+		}
 		else
-			pipex->path_cmd1 = get_path(pipex->args_cmd1[0], envp);
-	}
-	if (argv[CMD2][0] == '\0')
-		pipex->args_cmd2 = NULL;
-	else
-	{
-		pipex->args_cmd2 = ft_split_mod(argv[CMD2]);
-		if (!pipex->args_cmd2)
-			pipex->path_cmd2 = NULL;
-		else
-			pipex->path_cmd2 = get_path(pipex->args_cmd2[0], envp);
+		{
+			pipex->args_cmds[i] = ft_split_mod(argv[cmd_index]);
+			if (pipex->args_cmds[i] && pipex->args_cmds[i][0])
+				pipex->paths_cmds[i] = get_path(pipex->args_cmds[i][0], envp);
+			else
+				pipex->paths_cmds[i] = NULL;
+		}
 	}
 }
 
-void	init_pipex(t_pipex *pipex)
+
+
+// Inicialização atualizada
+void init_pipex(t_pipex *pipex, int cmd_count)
 {
-	pipex->args_cmd1 = NULL;
-	pipex->args_cmd2 = NULL;
-	pipex->path_cmd1 = NULL;
-	pipex->path_cmd2 = NULL;
+	int	i;
+
+	pipex->cmd_count = cmd_count;
+	pipex->paths_cmds = malloc(sizeof(char *) * cmd_count);
+	pipex->args_cmds = malloc(sizeof(char **) * cmd_count);
+	// ... resto da inicialização
+
+	// Inicializar todos os ponteiros como NULL
+	for (i = 0; i < cmd_count; i++)
+	{
+		pipex->paths_cmds[i] = NULL;
+		pipex->args_cmds[i] = NULL;
+	}
+
 	pipex->fd_infile = -1;
 	pipex->fd_outfile = -1;
 }
 
-int	main(int argc, char **argv, char **envp)
-{
-	t_pipex	pipex;
 
-	if (argc != 5)
-		ft_error("Usage: ./pipex file1 cmd1 cmd2 file2\n");
-	init_pipex(&pipex);
-	check_args(&pipex, argv, envp);
+int main(int argc, char **argv, char **envp)
+{
+	t_pipex pipex;
+
+	if (argc < 5)
+		ft_error("Usage: ./pipex file1 cmd1 cmd2 ... cmdn file2\n");
+
+	init_pipex(&pipex, argc - 3); // argc - 3 = número de comandos
+	check_args(&pipex, argv, envp); // Removido o parâmetro argc
 	ft_exec(&pipex, envp, argv);
 	ft_cleanup(&pipex);
 	return (0);
 }
+
 /*
 echo -e "banana\nlaranja\nbanana\nuva\nabacaxi\nbanana" > input.txt
 

@@ -6,7 +6,7 @@
 /*   By: cgross-s <cgross-s@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 20:36:43 by cgross-s          #+#    #+#             */
-/*   Updated: 2025/08/27 22:49:40 by cgross-s         ###   ########.fr       */
+/*   Updated: 2025/08/31 10:46:12 by cgross-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,18 +20,30 @@ void	ft_free_memory(char **path, char *path_command)
 
 void	ft_cleanup(t_pipex *pipex)
 {
+	int i;
+	// Limpar arrays de comandos
+	for (i = 0; i < pipex->cmd_count; i++)
+	{
+		if (pipex->paths_cmds[i])
+			free(pipex->paths_cmds[i]);
+		if (pipex->args_cmds[i])
+			ft_free_array(pipex->args_cmds[i]);
+	}
+	free(pipex->paths_cmds);
+	free(pipex->args_cmds);
+
 	if (pipex->fd_infile >= 0)
 		close(pipex->fd_infile);
 	if (pipex->fd_outfile >= 0)
 		close(pipex->fd_outfile);
-	if (pipex->path_cmd1)
+	/*if (pipex->path_cmd1)
 		free(pipex->path_cmd1);
 	if (pipex->path_cmd2)
 		free(pipex->path_cmd2);
 	if (pipex->args_cmd1)
 		ft_free_array(pipex->args_cmd1);
 	if (pipex->args_cmd2)
-		ft_free_array(pipex->args_cmd2);
+		ft_free_array(pipex->args_cmd2);*/
 	unlink(URANDOM_PATH);
 }
 
