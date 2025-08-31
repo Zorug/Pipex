@@ -6,7 +6,7 @@
 /*   By: cgross-s <cgross-s@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/25 21:16:41 by cgross-s          #+#    #+#             */
-/*   Updated: 2025/08/31 16:38:11 by cgross-s         ###   ########.fr       */
+/*   Updated: 2025/08/31 17:29:04 by cgross-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 # include "../libft/libft.h"
 # include <stdbool.h>
 # include <fcntl.h>
-# include <string.h>
+//# include <string.h>
 
 # define URANDOM_PATH ".pipex_urandom"
 

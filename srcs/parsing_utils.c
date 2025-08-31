@@ -6,7 +6,7 @@
 /*   By: cgross-s <cgross-s@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 20:04:48 by cgross-s          #+#    #+#             */
-/*   Updated: 2025/08/27 22:12:35 by cgross-s         ###   ########.fr       */
+/*   Updated: 2025/08/31 17:30:12 by cgross-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ int	is_only_spaces(const char *str)
 	size_t	k;
 
 	k = 0;
-	while (k < strlen(str))
+	while (k < ft_strlen(str))
 	{
 		if (str[k] != ' ' && str[k] != '\t' && str[k] != '\n')
 			return (0);
