@@ -6,12 +6,11 @@
 /*   By: cgross-s <cgross-s@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 22:42:16 by cgross-s          #+#    #+#             */
-/*   Updated: 2025/08/31 12:32:10 by cgross-s         ###   ########.fr       */
+/*   Updated: 2025/08/31 16:38:29 by cgross-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/pipex.h"
-
 
 // Verificação de argumentos atualizada
 void check_args(t_pipex *pipex, char **argv, char **envp)
@@ -37,8 +36,6 @@ void check_args(t_pipex *pipex, char **argv, char **envp)
 		}
 	}
 }
-
-
 
 // Inicialização atualizada
 void init_pipex(t_pipex *pipex, int cmd_count)
