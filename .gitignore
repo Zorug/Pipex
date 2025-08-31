@@ -1,0 +1,7 @@
+.build
+libft.a
+*.out
+.vscode
+pipex
+/objs
+*.txt
