@@ -6,7 +6,7 @@
 /*   By: cgross-s <cgross-s@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/25 21:16:41 by cgross-s          #+#    #+#             */
-/*   Updated: 2025/08/31 20:38:20 by cgross-s         ###   ########.fr       */
+/*   Updated: 2025/09/01 22:10:53 by cgross-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@
 # include "../libft/libft.h"
 # include <stdbool.h>
 # include <fcntl.h>
-//# include <string.h>
 
 # define URANDOM_PATH ".pipex_urandom"
 
@@ -51,12 +50,33 @@ typedef struct s_pipex
 	char	**argv;			// Adicionar argv à estrutura
 }	t_pipex;
 
+/*child_process.c*/
+void	setup_redirections(int cmd_index, int *pipes, t_pipex *pipex);
+void	setup_single_command(t_pipex *pipex);
+void	handle_missing_path(t_pipex *pipex, int cmd_index);
+void	cleanup_file_descriptors(t_pipex *pipex);
+void	child_process(int cmd_index, int *pipes, t_pipex *pipex, char **envp);
+
 /*error_handling.c*/
 void	ft_free_memory(char **path, char *path_command);
 void	ft_cleanup(t_pipex *pipex);
 void	custom_error(char *file, char *message, t_pipex *pipex, int error);
 void	ft_free_array(char **path);
 int		ft_error(char *error_message);
+
+/*ft_exec_utils.c*/
+int		create_pipes(int *pipes, int pipe_count);
+void	cleanup_pipes(int *pipes, int pipes_created);
+//void	execute_commands(t_pipex *pipex, int *pipes, pid_t *pids, char **envp);
+
+/*ft_exec.c*/
+//int		create_pipes(int *pipes, int pipe_count);
+//void	cleanup_pipes(int *pipes, int pipes_created);
+void	execute_commands(t_pipex *pipex, int *pipes, pid_t *pids, char **envp);
+void	wait_for_children(pid_t *pids, int count);
+void	handle_single_command(t_pipex *pipex, char **envp);
+void	handle_malloc_error(int *pipes, pid_t *pids);
+void	ft_exec(t_pipex *pipex, char **envp);
 
 /*ft_split_mod.c*/
 char	*get_string(const char *s);
@@ -80,8 +100,8 @@ int		ft_read(char **line, int fd, char limiter);
 void	handle_urandom(void);
 
 /*main.c*/
-void check_args(t_pipex *pipex, char **envp);
-void init_pipex(t_pipex *pipex, int cmd_count, char **argv);
+void	check_args(t_pipex *pipex, char **envp);
+void	init_pipex(t_pipex *pipex, int cmd_count, char **argv);
 
 /*parsing_utils.c*/
 int		is_only_spaces(const char *str);
@@ -96,7 +116,5 @@ void	setup_infile(t_pipex *pipex);
 /*pipex.c*/
 void	ft_execve(char *cmd, char **args, t_pipex *pipex, char **envp);
 void	close_all_pipes(int *pipes, int pipe_count);
-void	child_process(int cmd_index, int *pipes, t_pipex *pipex, char **envp);
-void	ft_exec(t_pipex *pipex, char **envp);
 
 #endif 

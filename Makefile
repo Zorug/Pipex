@@ -6,7 +6,7 @@
 #    By: cgross-s <cgross-s@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/04/25 21:07:40 by cgross-s          #+#    #+#              #
-#    Updated: 2025/04/25 21:08:14 by cgross-s         ###   ########.fr        #
+#    Updated: 2025/09/01 22:09:09 by cgross-s         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -38,7 +38,9 @@ OBJ			= objs
 
 #FILES
 NAME		= pipex
-SRC_FILES	= pipex.c pipex_utils.c get_path.c error_handling.c handle_urandom.c ft_split_mod.c main.c ft_split_utils.c parsing_utils.c
+SRC_FILES	= 	pipex.c pipex_utils.c get_path.c error_handling.c handle_urandom.c \
+				ft_split_mod.c main.c ft_split_utils.c parsing_utils.c ft_exec.c \
+				child_process.c ft_exec_utils.c
 OBJ_FILES	= $(SRC_FILES:%.c=%.o)
 TARGET		= $(addprefix $(OBJ)/, $(OBJ_FILES))
 

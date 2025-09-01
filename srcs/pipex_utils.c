@@ -6,7 +6,7 @@
 /*   By: cgross-s <cgross-s@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 21:30:09 by cgross-s          #+#    #+#             */
-/*   Updated: 2025/08/31 20:44:42 by cgross-s         ###   ########.fr       */
+/*   Updated: 2025/09/01 19:57:38 by cgross-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,9 @@
 
 void	setup_outfile(t_pipex *pipex)
 {
-	int outfile_index;
-	
-	outfile_index = pipex->cmd_count + 2; // INFILE + cmd_count + 1
-	
+	int	outfile_index;
+
+	outfile_index = pipex->cmd_count + 2;
 	pipex->fd_outfile = open(pipex->argv[outfile_index],
 			O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	if (pipex->fd_outfile == -1)

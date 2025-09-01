@@ -6,7 +6,7 @@
 /*   By: cgross-s <cgross-s@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 20:04:48 by cgross-s          #+#    #+#             */
-/*   Updated: 2025/08/31 17:30:12 by cgross-s         ###   ########.fr       */
+/*   Updated: 2025/09/01 19:59:33 by cgross-s         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ void	remove_spaces(char **array)
 		return ;
 	copy_non_space_strings(array, array);
 }
+
 char	*is_script(char *cmd)
 {
 	return (ft_strnstr(cmd, ".sh", ft_strlen(cmd)));
